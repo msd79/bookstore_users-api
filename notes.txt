@@ -1,0 +1,11 @@
+SQL commands
+create database users;
+select user from mysql.user;
+GRANT ALL PRIVILEGES ON mydb.* TO 'myuser'@'%' WITH GRANT OPTION;
+
+"CREATE TABLE IF NOT EXISTS users (  id INT AUTO_INCREMENT PRIMARY KEY, \
+    first_name VARCHAR(45), \
+    last_name VARCHAR(45), \
+    email VARCHAR(45) NOT NULL UNIQUE, \
+    date_created VARCHAR(45) NOT NULL, \
+)"
