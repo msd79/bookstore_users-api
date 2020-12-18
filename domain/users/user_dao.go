@@ -18,10 +18,6 @@ const (
 	queryFindByEmailAndPassword = "SELECT id, first_name, last_name, email, date_created, status FROM users WHERE email=? AND password=? AND status=?"
 )
 
-var (
-	userDB = make(map[int64]*User)
-)
-
 //Get gets user from the persistent layer
 func (user *User) Get() *errors.RestErr {
 	stmt, err := users_db.Client.Prepare(queryGetUser)
@@ -59,5 +55,31 @@ func (user *User) Save() *errors.RestErr {
 
 	//user.DateCreated = date_util.GetNowString()
 
+	return nil
+}
+
+func (user *User) Update() *errors.RestErr {
+	stmt, err := users_db.Client.Prepare(queryUpdateUser)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	defer stmt.Close()
+	_, updateErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.ID)
+	if updateErr != nil {
+		return mysql_utils.ParseError(updateErr)
+	}
+	return nil
+}
+
+func (user *User) Delete() *errors.RestErr {
+	stmt, err := users_db.Client.Prepare(queryDeleteUser)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	defer stmt.Close()
+	_, deleteErr := stmt.Exec(user.ID)
+	if deleteErr != nil {
+		return mysql_utils.ParseError(deleteErr)
+	}
 	return nil
 }

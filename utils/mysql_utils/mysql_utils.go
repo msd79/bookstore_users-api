@@ -23,7 +23,7 @@ func ParseError(err error) *errors.RestErr {
 
 	switch sqlErr.Number {
 	case 1062:
-		return errors.NewInternalServerError("invalid data")
+		return errors.NewInternalServerError(sqlErr.Message)
 	}
 	return errors.NewInternalServerError("Error proccessing the request")
 }
