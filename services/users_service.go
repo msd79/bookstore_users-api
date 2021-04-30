@@ -1,6 +1,8 @@
 package services
 
 import (
+	"GoMicroServices/source-code/bookstore_users-api/utils/crypto_utils"
+
 	"github.com/msd79/bookstore_users-api/domain/users"
 	"github.com/msd79/bookstore_users-api/utils/date_util"
 	"github.com/msd79/bookstore_users-api/utils/errors"
@@ -11,7 +13,9 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
-	user.DateCreated = date_util.GetNowDBString()
+	user.Status = users.StatusActive
+	user.Password = crypto_utils.GetMd5(user.Password)
+	user.DateCreated = date_util.GetNowDBFormat()
 	if err := user.Save(); err != nil {
 		return nil, err
 	}
