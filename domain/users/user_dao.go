@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/msd79/bookstore_users-api/datasources/mysql/users_db"
-	"github.com/msd79/bookstore_users-api/utils/date_util"
 	"github.com/msd79/bookstore_users-api/utils/errors"
 	"github.com/msd79/bookstore_users-api/utils/mysql_utils"
 )
@@ -42,8 +41,7 @@ func (user *User) Save() *errors.RestErr {
 		return errors.NewInternalServerError(err.Error())
 	}
 	defer stmt.Close()
-	user.DateCreated = date_util.GetNowString()
-	insertResult, InsertErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated)
+	insertResult, InsertErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated, user.Status, user.Password)
 	if InsertErr != nil {
 		return mysql_utils.ParseError(InsertErr)
 	}
@@ -82,4 +80,30 @@ func (user *User) Delete() *errors.RestErr {
 		return mysql_utils.ParseError(deleteErr)
 	}
 	return nil
+}
+
+func (user *User) FindbyStatus(status string) ([]User, *errors.RestErr) {
+	stmt, err := users_db.Client.Prepare(queryFindByStatus)
+	if err != nil {
+		if err != nil {
+			return nil, errors.NewInternalServerError(err.Error())
+		}
+	}
+	users, getErr := stmt.Query(status)
+	if getErr != nil {
+		return nil, mysql_utils.ParseError(getErr)
+	}
+	defer users.Close()
+	result := make([]User, 0)
+	for users.Next() {
+		var user User
+		if err := users.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status); err != nil {
+			return nil, mysql_utils.ParseError(err)
+		}
+		result = append(result, user)
+	}
+	if len(result) == 0 {
+		return nil, errors.NewNotFoundError("not matching user found")
+	}
+	return result, nil
 }

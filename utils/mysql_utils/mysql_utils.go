@@ -24,6 +24,11 @@ func ParseError(err error) *errors.RestErr {
 	switch sqlErr.Number {
 	case 1062:
 		return errors.NewInternalServerError(sqlErr.Message)
+	case 1292:
+		return errors.NewInternalServerError(sqlErr.Message)
+	case 1364:
+		return errors.NewInternalServerError(sqlErr.Message)
 	}
+
 	return errors.NewInternalServerError("Error proccessing the request")
 }
