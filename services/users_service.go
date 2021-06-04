@@ -1,15 +1,30 @@
 package services
 
 import (
-	"GoMicroServices/source-code/bookstore_users-api/utils/crypto_utils"
+	"github.com/msd79/bookstore_users-api/utils/crypto_utils"
 
 	"github.com/msd79/bookstore_users-api/domain/users"
 	"github.com/msd79/bookstore_users-api/utils/date_util"
 	"github.com/msd79/bookstore_users-api/utils/errors"
 )
 
+var (
+	UserService userServiceInterface = &userService{}
+)
+
+type userService struct {
+}
+
+type userServiceInterface interface {
+	CreateUser(users.User) (*users.User, *errors.RestErr)
+	GetUser(int64) (*users.User, *errors.RestErr)
+	UpdateUser(users.User) (*users.User, *errors.RestErr)
+	DeleteUser(int64) *errors.RestErr
+	SearchUser(string) (users.Users, *errors.RestErr)
+}
+
 // CreateUser create a user in the database
-func CreateUser(user users.User) (*users.User, *errors.RestErr) {
+func (s *userService) CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
@@ -23,7 +38,7 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 }
 
 //GetUser gets a user from the persitent layer
-func GetUser(userID int64) (*users.User, *errors.RestErr) {
+func (s *userService) GetUser(userID int64) (*users.User, *errors.RestErr) {
 	u := &users.User{ID: userID}
 
 	if err := u.Get(); err != nil {
@@ -34,8 +49,8 @@ func GetUser(userID int64) (*users.User, *errors.RestErr) {
 }
 
 //UpdateUser update a user
-func UpdateUser(user users.User) (*users.User, *errors.RestErr) {
-	current, err := GetUser(user.ID)
+func (s *userService) UpdateUser(user users.User) (*users.User, *errors.RestErr) {
+	current, err := s.GetUser(user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -50,13 +65,13 @@ func UpdateUser(user users.User) (*users.User, *errors.RestErr) {
 }
 
 // DeleteUser invoke deletion of a user
-func DeleteUser(userID int64) *errors.RestErr {
+func (s *userService) DeleteUser(userID int64) *errors.RestErr {
 	user := &users.User{ID: userID}
 	return user.Delete()
 }
 
 // FindbyStatus find and returns list of users with a given status
-func Search(status string) (users.Users, *errors.RestErr) {
+func (s *userService) SearchUser(status string) (users.Users, *errors.RestErr) {
 	dao := &users.User{}
 	return dao.FindbyStatus(status)
 }
